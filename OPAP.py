@@ -96,18 +96,21 @@ def calculate_OPAP(binary_pixel_value,lsb_pixels,k_lsb):
     for i in range(len(binary_pixel_value)):
         d=lsb_pixels[i]-binary_pixel_value[i]
         if -2**k_lsb < d <2**k_lsb :
-            if 2**(k_lsb-1)<d<2**k_lsb and lsb_pixels[i] >= 2**k_lsb :
+            if (2**(k_lsb-1)<d<2**k_lsb) and (lsb_pixels[i] >= 2**k_lsb) :
                 new_pixels +=[lsb_pixels[i]-2**k_lsb]
-            if -2**k_lsb < d <-(2**k_lsb) and lsb_pixels[i] <= (255-2**k_lsb):
+            elif (-2**k_lsb < d <-(2**k_lsb)) and (lsb_pixels[i] <= (255-2**k_lsb)):
                 new_pixels += [lsb_pixels[i]+2**k_lsb]
             else :
                 new_pixels +=[lsb_pixels[i]]
+        else:
+            print("cant calculate")
     return new_pixels
 
 
 
+
 def show_new_picture(dec_pixels):
-    img = Image.new('RGB',(517,517))
+    img = Image.new('L',(512,512))
     img.putdata(dec_pixels)
     img.save("new_img.bmp")
     img.show()
@@ -115,8 +118,11 @@ def show_new_picture(dec_pixels):
         
 
 pixel_val =[]
+
 pixel_val = pixel_value(pixel_value_hostimage)
-print("pixel host val",pixel_val[0:30])
+
+#print("pixel value",len(pixel_val))
+#print("pixel host val \n",pixel_val[:-100])
 char =size_of_file(file)
 binary_pixel_values=[]
 binary_pixel_values=convert_pixelvalue_to_binary(pixel_val)#####binary e host image
@@ -127,17 +133,18 @@ k_lsb=cal_of_k(char)
 #k_slicee_k_slicee_scret_data =[]
 k_slicee_k_slicee_scret_data =spilit_value_with_k(string_scret_data,k_lsb)
 #print("len:",len(k_slicee_k_slicee_scret_data))
-#print("\n secret data slice: \n",k_slicee_k_slicee_scret_data[0:30])
+#print("\n secret data slice: \n",k_slicee_k_slicee_scret_data[0:100])
 lsb_pixels =LSB(k_slicee_k_slicee_scret_data,binary_pixel_values,k_lsb)
-#print("\n k-lsb pixel binary :\n",lsb_pixels[0:30])
+#print("\n k-lsb pixel binary :\n",lsb_pixels[0:100])
 dec_lsb_pixels=conver_bin_to_decimal(lsb_pixels)
-print("\n lsb pixel decimal : \n" ,dec_lsb_pixels[0:30])
+#print("\n lsb pixel decimal : \n" ,dec_lsb_pixels[:-100])
 #print(dec_lsb_pixels)
-
+#print("len lsb pixels",len(lsb_pixels))
 #show_new_picture(dec_lsb_pixels)
 
 opap_pixels=[]
 opap_pixels=calculate_OPAP(pixel_val,dec_lsb_pixels,k_lsb)
-#print(opap_pixels[0:30])
-print("len",len(opap_pixels))
+
+#print("opap \n",opap_pixels[:-100])
+#print("len opap",len(opap_pixels))
 show_new_picture(opap_pixels)
