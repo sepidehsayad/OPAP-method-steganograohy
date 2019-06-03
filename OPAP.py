@@ -1,12 +1,14 @@
 from PIL import Image
 
-host_image = Image.open('baboon512.bmp','r') #open image 
 
-file = open('secretdata.txt','r') #file of scret data
+host_image = Image.open('baboon512.bmp','r') #open image 
+secret_image = Image.open('boat256.bmp','r') #open image
 
 
 pixel_value_hostimage = list(host_image.getdata()) #we have pixels in this list
 
+
+pix_val_secret=list(secret_image.getdata())
 
 
 width, height =host_image.size #size of pic
@@ -19,20 +21,13 @@ def pixel_value(list_of_values): #RGB(R,G,B) in gray scale = RGB(X,X,X) so one o
     return pixel_val
 
 
-
-
-def size_of_file(file):#size of secret data 
-    characters = 0
-    for line in file:
-        characters = characters + len(line)
-    return characters
-
-
-
 def cal_of_k(size_of_file):
     pixels=host_image.size[0]*host_image.size[1]
-    return int(pixels/size_of_file) #calculate K-LSB (number of pixeles/size_of_file)
-
+    k = int(size_of_file/pixels)
+    if 1<= k <= 4 :
+        print("k :",k)
+        return k #calculate K-LSB (number of pixeles/size_of_file)
+    return "PLZ ENTER ANOTHER FILE"
 
 
 def convert_pixelvalue_to_binary(pixel_val):
@@ -42,27 +37,12 @@ def convert_pixelvalue_to_binary(pixel_val):
 
     return binary_of_pixel_value
 
-
-
-def list_of_secret_data_k(file):#all the scret data in of string 
-        with open("secretdata.txt", "r") as ins:
-            array = []
-            for line in ins:
-                array.append(line.rstrip('\n'))
-        my_lst_str = ''.join(map(str,array))
-        return my_lst_str
-
-
-
 def spilit_value_with_k(string,k):#convert string(secret data) to k slice k slice
     list_k=[]
     for i in range(0,len(string),k):
         list_k+=[string[i:i+k]]
     
     return list_k
-
-
-
 
 def LSB(list_secret_data,list_binary_hostimage,k):
     new_pixels=[]
@@ -76,19 +56,13 @@ def LSB(list_secret_data,list_binary_hostimage,k):
     return new_pixels
 
 
+
 def conver_bin_to_decimal(bin_pixles):
     dec_pixels=[]
     for i in bin_pixles:
         dec_pixels+=[int(i,2)]
     return dec_pixels
 
-
-
-#def show_new_picture(dec_pixels):
-#    img = Image.new('L', (512, 512))
-#    img.putdata(dec_pixels)
-#    img.save("new_img.bmp")
-#    img.show()
 
 
 def calculate_OPAP(binary_pixel_value,lsb_pixels,k_lsb):
@@ -108,43 +82,38 @@ def calculate_OPAP(binary_pixel_value,lsb_pixels,k_lsb):
 
 
 
-
 def show_new_picture(dec_pixels):
     img = Image.new('L',(512,512))
     img.putdata(dec_pixels)
     img.save("new_img.bmp")
     img.show()
 
-        
 
+Pixel_val_secret =pixel_value(pix_val_secret)
+binary_pixel_values_secret=convert_pixelvalue_to_binary(Pixel_val_secret)
+print(binary_pixel_values_secret[0:30])
 pixel_val =[]
+f_sec_pix='' 
+for i in range(len(binary_pixel_values_secret)) :
+    f_sec_pix +=binary_pixel_values_secret[i]
+
 
 pixel_val = pixel_value(pixel_value_hostimage)
+binary_pixel_values=convert_pixelvalue_to_binary(pixel_val)
+string_scret_data= f_sec_pix
 
-#print("pixel value",len(pixel_val))
-#print("pixel host val \n",pixel_val[:-100])
-char =size_of_file(file)
-binary_pixel_values=[]
-binary_pixel_values=convert_pixelvalue_to_binary(pixel_val)#####binary e host image
-#print("\n pixel value host binary :\n",binary_pixel_values[0:30])#bayad bashe baraye di 
-string_scret_data= []
-string_scret_data=list_of_secret_data_k(file)
-k_lsb=cal_of_k(char)
-#k_slicee_k_slicee_scret_data =[]
+k_lsb=cal_of_k(len(string_scret_data))
+
 k_slicee_k_slicee_scret_data =spilit_value_with_k(string_scret_data,k_lsb)
-#print("len:",len(k_slicee_k_slicee_scret_data))
-#print("\n secret data slice: \n",k_slicee_k_slicee_scret_data[0:100])
-lsb_pixels =LSB(k_slicee_k_slicee_scret_data,binary_pixel_values,k_lsb)
-#print("\n k-lsb pixel binary :\n",lsb_pixels[0:100])
-dec_lsb_pixels=conver_bin_to_decimal(lsb_pixels)
-#print("\n lsb pixel decimal : \n" ,dec_lsb_pixels[:-100])
-#print(dec_lsb_pixels)
-#print("len lsb pixels",len(lsb_pixels))
-#show_new_picture(dec_lsb_pixels)
 
-opap_pixels=[]
+lsb_pixels =LSB(k_slicee_k_slicee_scret_data,binary_pixel_values,k_lsb)
+
+
+dec_lsb_pixels=conver_bin_to_decimal(lsb_pixels)
+
 opap_pixels=calculate_OPAP(pixel_val,dec_lsb_pixels,k_lsb)
 
-#print("opap \n",opap_pixels[:-100])
-#print("len opap",len(opap_pixels))
 show_new_picture(opap_pixels)
+
+
+
